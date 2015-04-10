@@ -7,10 +7,15 @@ def newtonsMethod(f, x, startPoint):
     starting at startPoint '''
     
     curX = startPoint
+    
+    # Sympy does this for us
     fprime = f.diff(x)
+
+    # The lambdified version allow us to directly compute values
     fEval = lambdify(x, f, 'numpy')
     fprimeEval = lambdify(x, fprime, 'numpy')
 
+    # Run until we get very close to a root
     while abs(fEval(curX) - 0) > 0.001:
         print curX, fEval(curX)
         slope = fprimeEval(curX)
@@ -20,7 +25,10 @@ def newtonsMethod(f, x, startPoint):
 
 
 def main():
+    # This makes the "variable" for sympy
     x = Symbol('x')
+
+    # The function we want to analyze
     y = x**3 - x**2 - x + 1.1
     
     root = newtonsMethod(y, x, 20.00)
