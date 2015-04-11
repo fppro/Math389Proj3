@@ -1,10 +1,12 @@
 from sympy import *
 import numpy as np
+import scipy.stats
 import math
 
-def newtonsMethod(f, x, startPoint):
+def newtonsMethod(f, x, startPoint, epsilon):
     ''' Take a function f of a variable (symbol) x. Run Newton's Method
-    starting at startPoint '''
+    starting at startPoint, and return the final monotonically decreasing
+    sequence of decreasing value evaluations when it was evaluated'''
     
     curX = startPoint
     
@@ -15,15 +17,21 @@ def newtonsMethod(f, x, startPoint):
     fEval = lambdify(x, f, 'numpy')
     fprimeEval = lambdify(x, fprime, 'numpy')
 
+    history = []
+
     # Run until we get very close to a root
-    while abs(fEval(curX) - 0) > 0.001:
-        print curX, fEval(curX)
+    while abs(fEval(curX) - 0) > epsilon:
+        history.append(abs(fEval(curX)))
+        if len(history) > 1 and history[-1] > history[-2]:
+            history = []
+        print history
         slope = fprimeEval(curX)
         if fprimeEval(curX) == 0:
-            return curX
+            return []
         curX = curX - (fEval(curX) / fprimeEval(curX))
 
-    return curX
+    history.append(abs(fEval(curX)))
+    return history
 
 def halleysMethod(f, x, startPoint):
     ''' Take a function f of a variable (symbol) x. Run Halley's Method
@@ -81,8 +89,12 @@ def main():
     # The function we want to analyze
     y = x**3 - x**2 - x + 1.1
     
-    root = halleysMethod(y, x, 2.00)
-    print "Final answer: ", root
+    path = newtonsMethod(y, x, 2.00, .00000001)
+    print "Final answer: ", path
+    print "Logs :", np.log10(path)
+    print np.polyfit(range(len(path)), np.log10(path), 1)
+    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(range(len(path)), np.log10(path))
+    print slope, r_value**2
 
     #root = secantMethod(y, x, 2.00, 3.00)
     #print "Final answer: ", root
