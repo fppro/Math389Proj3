@@ -54,10 +54,10 @@ def halleysMethod(f, x, startPoint, epsilon):
     while abs(fEval(curX) - 0) > epsilon:
         history.append(abs(fEval(curX)))
         if len(history) > 1 and history[-1] > history[-2]:
-            history = []
+            history = [history[-1]]
         numer = 2*fEval(curX)*fprimeEval(curX)
         denom = 2*fprimeEval(curX)*fprimeEval(curX) - fEval(curX)*fdoublePrimeEval(curX) 
-        if denom == 0:
+        if denom == 0 or numer == 0:
             return []
         curX = curX - (numer / denom)
 
@@ -83,7 +83,7 @@ def secantMethod(f, x, startPoint1, startPoint2, epsilon):
             history = []
         slope = (fEval(x2)-fEval(x1))/(x2-x1)
         if slope == 0:
-            return x2
+            return []
         x1 = x2
         x2 = x2 - (fEval(x2) / slope)
 
@@ -91,8 +91,12 @@ def secantMethod(f, x, startPoint1, startPoint2, epsilon):
     return history
 
 def convergenceRate(path):
-    np.polyfit(range(len(path)),  np.log10(path), 1)
-    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(range(len(path)), np.log10(path))
+    while path[-1] == 0.0:
+        path = path[0:-1]
+    logFArray = np.log10(path)
+    #print logFArray
+    #print logFArray[1:], " ", logFArray[0:-1]
+    slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(logFArray[0:-1], logFArray[1:])
     return [slope, r_value**2]
 
 def main():
@@ -100,14 +104,43 @@ def main():
     x = Symbol('x')
 
     # The function we want to analyze
-    y = x**3 - x**2 - x + 1.1
-    
-    path = secantMethod(y, x, 2.00, 2.10, .00000001)
-    print "Final answer: ", path
-    print convergenceRate(path)
+    y = x**5 - x**4 + x**3 - x**2 + x - 1
 
-    #root = secantMethod(y, x, 2.00, 3.00)
-    #print "Final answer: ", root
+    total = [0, 0]
+    count = 0
+    print "Secant Method:"
+    for i in range(-1000, 1000, 10):
+        path = secantMethod(y, x, i/100., (i+10)/100., .000000000001)
+        if len(path) < 3:
+            continue
+        count = count+ 1
+        total[0] = total[0] + convergenceRate(path)[0]
+        total[1] = total[1] + convergenceRate(path)[1]
+    print total[0] / count, " ", total[1]/count
+
+    total = [0, 0]
+    count = 0
+    print "Newton's Method:"
+    for i in range(-1000, 1000, 10):
+        path = newtonsMethod(y, x, i/100., .000000000001)
+        if len(path) < 3:
+            continue
+        count = count+ 1
+        total[0] = total[0] + convergenceRate(path)[0]
+        total[1] = total[1] + convergenceRate(path)[1]
+    print total[0] / count, " ", total[1]/count
+
+    total = [0, 0]
+    count = 0
+    print "Halley's Method:"
+    for i in range(-1000, 1000, 10):
+        path = halleysMethod(y, x, i/100.,  .000000000001)
+        if len(path) < 3:
+            continue
+        count = count+ 1
+        total[0] = total[0] + convergenceRate(path)[0]
+        total[1] = total[1] + convergenceRate(path)[1]
+    print total[0] / count, " ", total[1]/count
 
 if __name__ == '__main__':
     main()
