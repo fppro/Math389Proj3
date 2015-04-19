@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from sympy import *
 import numpy as np
 import scipy.stats
@@ -7,9 +9,9 @@ def newtonsMethod(f, x, startPoint, epsilon):
     ''' Take a function f of a variable (symbol) x. Run Newton's Method
     starting at startPoint, and return the final monotonically decreasing
     sequence of decreasing value evaluations when it was evaluated'''
-    
+
     curX = startPoint
-    
+
     # Sympy does this for us
     fprime = f.diff(x)
 
@@ -35,9 +37,9 @@ def newtonsMethod(f, x, startPoint, epsilon):
 def halleysMethod(f, x, startPoint, epsilon):
     ''' Take a function f of a variable (symbol) x. Run Halley's Method
     starting at startPoint '''
-    
+
     curX = startPoint
-    
+
     # Sympy does this for us
     fprime = f.diff(x)
 
@@ -56,7 +58,7 @@ def halleysMethod(f, x, startPoint, epsilon):
         if len(history) > 1 and history[-1] > history[-2]:
             history = [history[-1]]
         numer = 2*fEval(curX)*fprimeEval(curX)
-        denom = 2*fprimeEval(curX)*fprimeEval(curX) - fEval(curX)*fdoublePrimeEval(curX) 
+        denom = 2*fprimeEval(curX)*fprimeEval(curX) - fEval(curX)*fdoublePrimeEval(curX)
         if denom == 0 or numer == 0:
             return []
         curX = curX - (numer / denom)
@@ -67,10 +69,10 @@ def halleysMethod(f, x, startPoint, epsilon):
 def secantMethod(f, x, startPoint1, startPoint2, epsilon):
     ''' Take a function f of a variable (symbol) x. Run Secant Method
     starting at startPoints '''
-    
+
     x1 = startPoint1
     x2 = startPoint2
-    
+
     # The lambdified version allow us to directly compute values
     fEval = lambdify(x, f, 'numpy')
 
