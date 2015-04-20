@@ -4,6 +4,8 @@ from sympy import *
 import numpy as np
 import scipy.stats
 import math
+import gc
+import time
 
 def recursiveMethod(f, x, topLevel, degree, startPoint, epsilon):
     print "Degree:", degree, "f:", f
@@ -156,6 +158,8 @@ def main():
     total = [0, 0]
     count = 0
     print "Recursive Method:"
+    gc.disable()
+    tic = time.time()
     for i in range(-1000, 1000, 100):
         path = recursiveMethod(y, x, True, 9, i/100., .00001)
         path = [float(k) for k in path]
@@ -164,7 +168,10 @@ def main():
         count = count+ 1
         total[0] = total[0] + convergenceRate(path)[0]
         total[1] = total[1] + convergenceRate(path)[1]
+    toc = time.time()
+    gc.enable()
     print total[0] / count, " ", total[1]/count
+    print "AVG TIME: {}".format((toc-tic) / len(xrange(-1000, 1000, 100)))
 
 #   
 #     total = [0, 0]
@@ -182,6 +189,8 @@ def main():
     total = [0, 0]
     count = 0
     print "Newton's Method:"
+    gc.disable()
+    tic = time.time()
     for i in range(-1000, 1000, 100):
         path = newtonsMethod(y, x, i/100., .01)
         if len(path) < 3:
@@ -189,7 +198,10 @@ def main():
         count = count+ 1
         total[0] = total[0] + convergenceRate(path)[0]
         total[1] = total[1] + convergenceRate(path)[1]
+    toc = time.time()
+    gc.enable()
     print total[0] / count, " ", total[1]/count
+    print "AVG TIME: {}".format((toc-tic) / len(xrange(-1000, 1000, 100)))
 # 
 #     total = [0, 0]
 #     count = 0
