@@ -3,6 +3,47 @@ import numpy as np
 import scipy.stats
 import math
 
+def recursiveMethod(f, x, topLevel, degree, startPoint, epsilon):
+    print "Degree:", degree, "f:", f
+    if degree < 2:
+        ret = solve(f)[0].evalf()
+        #print "Returning", ret
+        return ret
+        #return 
+    
+    fEval = lambdify(x, f, 'numpy')
+
+    # Recurse on a polynomial of odd degree
+    newDeg = degree / 2
+    if newDeg % 2 == 0:
+        newDeg -= 1
+
+    # fApprox is the taylor expansion around the point z
+    z = Symbol('z')
+    taylor = series(f, x, z, newDeg + 1).removeO()
+    taylorAt = lambdify(z, taylor, 'numpy')
+    
+    curGuess = startPoint
+    history = []
+    
+    while abs(fEval(curGuess)) > epsilon:
+        if topLevel:
+            history.append(abs(fEval(curGuess)))
+            if len(history) > 1 and history[-1] > history[-2]:
+                history = []
+        
+        # Compute Taylor expansion for degree / 2
+        curGuess = recursiveMethod(taylorAt(curGuess), x, False, newDeg, curGuess, epsilon)
+    
+            
+    if topLevel:
+        history.append(abs(fEval(curGuess)))
+        print "Found root:", curGuess
+        return history
+    else:
+        return curGuess
+    
+
 def newtonsMethod(f, x, startPoint, epsilon):
     ''' Take a function f of a variable (symbol) x. Run Newton's Method
     starting at startPoint, and return the final monotonically decreasing
@@ -104,13 +145,18 @@ def main():
     x = Symbol('x')
 
     # The function we want to analyze
-    y = x**5 - x**4 + x**3 - x**2 + x - 1
+    y = x**9 - x**8 + x**7 - x**6 + x**5 - x**4 + x**3 - x**2 + x - 1
 
+    #print "Recrusive method on (" + repr(y) + "):"
+    #print recursiveMethod(y, x, True, 9, 5.0, 0.001)
+    
+        
     total = [0, 0]
     count = 0
-    print "Secant Method:"
-    for i in range(-1000, 1000, 10):
-        path = secantMethod(y, x, i/100., (i+10)/100., .000000000001)
+    print "Recursive Method:"
+    for i in range(-1000, 1000, 100):
+        path = recursiveMethod(y, x, True, 9, i/100., .00001)
+        path = [float(k) for k in path]
         if len(path) < 3:
             continue
         count = count+ 1
@@ -118,29 +164,42 @@ def main():
         total[1] = total[1] + convergenceRate(path)[1]
     print total[0] / count, " ", total[1]/count
 
+#   
+#     total = [0, 0]
+#     count = 0
+#     print "Secant Method:"
+#     for i in range(-1000, 1000, 10):
+#         path = secantMethod(y, x, i/100., (i+10)/100., .000000000001)
+#         if len(path) < 3:
+#             continue
+#         count = count+ 1
+#         total[0] = total[0] + convergenceRate(path)[0]
+#         total[1] = total[1] + convergenceRate(path)[1]
+#     print total[0] / count, " ", total[1]/count
+# 
     total = [0, 0]
     count = 0
     print "Newton's Method:"
-    for i in range(-1000, 1000, 10):
-        path = newtonsMethod(y, x, i/100., .000000000001)
+    for i in range(-1000, 1000, 100):
+        path = newtonsMethod(y, x, i/100., .01)
         if len(path) < 3:
             continue
         count = count+ 1
         total[0] = total[0] + convergenceRate(path)[0]
         total[1] = total[1] + convergenceRate(path)[1]
     print total[0] / count, " ", total[1]/count
-
-    total = [0, 0]
-    count = 0
-    print "Halley's Method:"
-    for i in range(-1000, 1000, 10):
-        path = halleysMethod(y, x, i/100.,  .000000000001)
-        if len(path) < 3:
-            continue
-        count = count+ 1
-        total[0] = total[0] + convergenceRate(path)[0]
-        total[1] = total[1] + convergenceRate(path)[1]
-    print total[0] / count, " ", total[1]/count
+# 
+#     total = [0, 0]
+#     count = 0
+#     print "Halley's Method:"
+#     for i in range(-1000, 1000, 10):
+#         path = halleysMethod(y, x, i/100.,  .000000000001)
+#         if len(path) < 3:
+#             continue
+#         count = count+ 1
+#         total[0] = total[0] + convergenceRate(path)[0]
+#         total[1] = total[1] + convergenceRate(path)[1]
+#     print total[0] / count, " ", total[1]/count
 
 if __name__ == '__main__':
     main()
