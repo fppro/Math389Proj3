@@ -161,7 +161,7 @@ def main():
     gc.disable()
     tic = time.time()
     for i in range(-1000, 1000, 100):
-        path = recursiveMethod(y, x, True, 9, i/100., .00001)
+        path = recursiveMethod(y, x, True, 9, i/100., .01)
         path = [float(k) for k in path]
         if len(path) < 3:
             continue
